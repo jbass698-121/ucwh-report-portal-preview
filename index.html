@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Report Portal — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React + Babel -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Supabase JS client (UMD). Must load BEFORE config.js so window.supabase exists. -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+
+  <!-- Config + auth + data (plain JS, loaded BEFORE the jsx bundles so they're globals) -->
+  <script src="js/config.js"></script>
+  <script src="js/preview-auth.js"></script>
+  <script src="js/preview-data.js"></script>
+  <script src="js/preview-library.js"></script>
+  <script src="js/preview-telemetry.js"></script>
+
+  <script>
+    // Tweakable defaults — host can rewrite this block on disk
+    window.TWEAKS = /*EDITMODE-BEGIN*/{
+      "accent": "evergreen",
+      "density": "comfortable",
+      "landingLayout": "split",
+      "sidebarStyle": "rail",
+      "showSearch": true
+    }/*EDITMODE-END*/;
+
+    // Initialize Supabase + auth immediately (non-blocking; jsx reads later)
+    try { window.PreviewAuth && window.PreviewAuth.init(); } catch(e) { console.error(e); }
+  </script>
+
+  <!-- Preview badge — always visible, never on prod -->
+  <div id="preview-badge" style="
+    position:fixed; top:8px; right:8px; z-index:9999;
+    background:oklch(58% 0.14 40); color:#fff;
+    font-family: 'IBM Plex Mono', monospace; font-size:10px; font-weight:600;
+    letter-spacing:0.08em; padding:4px 8px; border-radius:4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15); pointer-events:none;
+    text-transform:uppercase;
+  ">Preview</div>
+
+  <!-- Dev-mode badge — shows below Preview chip when running with a fake session.
+       Hidden via JS immediately if the URL explicitly opts out with ?dev=0. -->
+  <div id="dev-badge" style="
+    position:fixed; top:34px; right:8px; z-index:9999;
+    background:oklch(52% 0.14 255); color:#fff;
+    font-family: 'IBM Plex Mono', monospace; font-size:10px; font-weight:600;
+    letter-spacing:0.08em; padding:4px 8px; border-radius:4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15); pointer-events:none;
+    text-transform:uppercase;
+  ">Dev · Fake Session</div>
+  <script>
+    // Hide the dev badge if the user has explicitly disabled dev mode
+    try {
+      var p = new URLSearchParams(window.location.search);
+      if (p.get('dev') === '0') document.getElementById('dev-badge').style.display = 'none';
+    } catch(_) {}
+  </script>
+
+  <!-- Views/components/app — type=text/babel so Babel transforms at runtime -->
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="views.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
